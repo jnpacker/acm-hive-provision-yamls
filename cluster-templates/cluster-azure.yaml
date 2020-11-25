@@ -1,0 +1,120 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: TMP_NAME-azure
+---
+apiVersion: hive.openshift.io/v1
+kind: ClusterDeployment
+metadata:
+  name: TMP_NAME-azure
+  namespace: TMP_NAME-azure
+  labels:
+    cloud: 'Azure'
+    vendor: 'OpenShift'
+spec:
+  baseDomain: REPLACE_BASEDOMAIN
+  clusterName: TMP_NAME-azure
+  controlPlaneConfig:
+    servingCertificates: {}
+  installed: false
+  platform:
+    azure:
+      baseDomainResourceGroupName: domain
+      credentialsSecretRef:
+        name: TMP_NAME-azure-creds
+      region: centralus
+  provisioning:
+    installConfigSecretRef:
+      name: TMP_NAME-azure-install-config
+    sshPrivateKeySecretRef:
+      name: TMP_NAME-azure-ssh-private-key
+    imageSetRef:
+       #quay.io/openshift-release-dev/ocp-release:4.5.11-x86_64
+      name: imgVERSION-x86-64
+  pullSecretRef:
+    name: TMP_NAME-azure-pull-secret
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  labels:
+    cloud: Azure
+    name: TMP_NAME-azure
+    vendor: OpenShift
+  name: TMP_NAME-azure
+spec:
+  hubAcceptsClient: true
+---
+apiVersion: hive.openshift.io/v1
+kind: MachinePool
+metadata:
+  name: TMP_NAME-azure-worker
+  namespace: TMP_NAME-azure
+spec:
+  clusterDeploymentRef:
+    name: TMP_NAME-azure
+  name: worker
+  platform:
+    azure:
+      osDisk:
+        diskSizeGB: 128
+      type: Standard_D2s_v3
+      zones:
+      - "1"
+      - "2"
+      - "3"
+  replicas: 3
+---
+apiVersion: agent.open-cluster-management.io/v1
+kind: KlusterletAddonConfig
+metadata:
+  name: TMP_NAME-azure
+  namespace: TMP_NAME-azure
+spec:
+  clusterName: TMP_NAME-azure
+  clusterNamespace: TMP_NAME-azure
+  clusterLabels:
+    cloud: Azure
+    vendor: OpenShift
+  applicationManager:
+    enabled: true
+  policyController:
+    enabled: true
+  searchCollector:
+    enabled: true
+  certPolicyController:
+    enabled: true
+  iamPolicyController:
+    enabled: true
+  version: 2.1.0
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: TMP_NAME-azure-creds
+  namespace: TMP_NAME-azure
+stringData:
+  osServicePrincipal.json: |-
+    # PASTE YOUR GCP SERVICE PRINCIPAL CREDENTIAL HERE
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: TMP_NAME-azure-pull-secret
+  namespace: TMP_NAME-azure
+stringData:
+  .dockerconfigjson: |-
+    # PASTE YOUR OPENSHIFT PULL SECRET HERE
+type: kubernetes.io/dockerconfigjson
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: TMP_NAME-azure-ssh-private-key
+  namespace: TMP_NAME-azure
+stringData:
+  ssh-privatekey: |-
+    # PASTE YOUR SSH PRIVATE KEY HERE
+type: Opaque

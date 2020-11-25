@@ -1,0 +1,117 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: TMP_NAME-aws
+---
+apiVersion: hive.openshift.io/v1
+kind: ClusterDeployment
+metadata:
+  name: TMP_NAME-aws
+  namespace: TMP_NAME-aws
+  labels:
+    cloud: 'AWS'
+    vendor: 'OpenShift'
+spec:
+  baseDomain: REPLACE_BASEDOMAIN
+  clusterName: TMP_NAME-aws
+  controlPlaneConfig:
+    servingCertificates: {}
+  installed: false
+  platform:
+    aws:
+      credentialsSecretRef:
+        name: TMP_NAME-aws-creds
+      region: us-east-1
+  provisioning:
+    installConfigSecretRef:
+      name: TMP_NAME-aws-install-config
+    sshPrivateKeySecretRef:
+      name: TMP_NAME-aws-ssh-private-key
+    imageSetRef:
+       #quay.io/openshift-release-dev/ocp-release:4.5.11-x86_64
+      name: imgVERSION-x86-64
+  pullSecretRef:
+    name: TMP_NAME-aws-pull-secret
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  labels:
+    cloud: Amazon
+    name: TMP_NAME-aws
+    vendor: OpenShift
+  name: TMP_NAME-aws
+spec:
+  hubAcceptsClient: true
+---
+apiVersion: hive.openshift.io/v1
+kind: MachinePool
+metadata:
+  name: TMP_NAME-aws-worker
+  namespace: TMP_NAME-aws
+spec:
+  clusterDeploymentRef:
+    name: TMP_NAME-aws
+  name: worker
+  platform:
+    aws:
+      rootVolume:
+        iops: 100
+        size: 100
+        type: gp2
+      type: m5.xlarge
+  replicas: 3
+---
+apiVersion: agent.open-cluster-management.io/v1
+kind: KlusterletAddonConfig
+metadata:
+  name: TMP_NAME-aws
+  namespace: TMP_NAME-aws
+spec:
+  clusterName: TMP_NAME-aws
+  clusterNamespace: TMP_NAME-aws
+  clusterLabels:
+    cloud: Amazon
+    vendor: OpenShift
+  applicationManager:
+    enabled: true
+  policyController:
+    enabled: true
+  searchCollector:
+    enabled: true
+  certPolicyController:
+    enabled: true
+  iamPolicyController:
+    enabled: true
+  version: 2.1.0
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: TMP_NAME-aws-pull-secret
+  namespace: TMP_NAME-aws
+stringData:
+  .dockerconfigjson: |-
+    # PASTE YOUR OPENSHIFT PULL SECRET HERE
+type: kubernetes.io/dockerconfigjson
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: TMP_NAME-aws-ssh-private-key
+  namespace: TMP_NAME-aws
+stringData:
+  ssh-privatekey: |-
+    # PASTE YOUR SSH PRIVATE KEY HERE
+type: Opaque
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: TMP_NAME-aws-creds
+  namespace: TMP_NAME-aws
+stringData:
+  aws_access_key_id: #PASTE YOUR AWS ACCESS KEY ID HERE
+  aws_secret_access_key: #PASTE YOUR AWS ACCESS SECRET KEY HERE

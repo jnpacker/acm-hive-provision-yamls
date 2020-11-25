@@ -1,0 +1,50 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: TMP_NAME-azure-install-config
+  namespace: TMP_NAME-azure
+type: Opaque
+stringData:
+  install-config.yaml: |-
+    apiVersion: v1
+    metadata:
+      name: TMP_NAME-azure
+    baseDomain: REPLACE_BASEDOMAIN
+    controlPlane:
+      hyperthreading: Enabled
+      name: master
+      platform:
+        azure:
+          osDisk:
+            diskSizeGB: 128
+          type:  Standard_D4s_v3
+      replicas: 3
+    compute:
+    - hyperthreading: Enabled
+      name: worker
+      platform:
+        azure:
+          type:  Standard_D2s_v3
+          osDisk:
+            diskSizeGB: 128
+          zones:
+          - "1"
+          - "2"
+          - "3"
+      replicas: 3
+    networking:
+      clusterNetwork:
+      - cidr: 10.128.0.0/14
+        hostPrefix: 23
+      machineCIDR: 10.0.0.0/16
+      networkType: OVNKubernetes
+      serviceNetwork:
+      - 172.30.0.0/16
+    platform:
+      azure:
+        baseDomainResourceGroupName: #PASTE AZURE DOMAIN RESOURCE GROUP NAME HERE
+        region: centralus
+    pullSecret: "" # skip, hive will inject based on it's secrets
+    sshKey: |-
+      #PASTE YOUR SSH PUBLIC KEY HERE

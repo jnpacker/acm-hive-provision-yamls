@@ -1,0 +1,6 @@
+/cluster-aws.yaml
+/cluster-azure.yaml
+/cluster-gcp.yaml
+/gcp-install-config.yaml
+/aws-install-config.yaml
+/azure-install-config.yaml

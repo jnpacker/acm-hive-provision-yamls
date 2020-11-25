@@ -1,0 +1,7 @@
+resources:
+- aws-install-config.yaml
+- gcp-install-config.yaml
+- azure-install-config.yaml
+- cluster-aws.yaml
+- cluster-gcp.yaml
+- cluster-azure.yaml
